@@ -13,6 +13,18 @@ import {
   isWeekend,
   parseDate,
 } from "@/utils/date";
+import {
+  ASSIGNEE_COLORS,
+  DEFAULT_ASSIGNEE_COLOR,
+  STATE_COLORS,
+  PROGRESS_BY_STATE,
+  STATE_TYPE_PRIORITY,
+  HIERARCHY_INDENT_PX,
+  UNASSIGNED_SORT_KEY,
+  HIERARCHY_SEPARATOR,
+  MIN_COLUMN_WIDTH_PX,
+  HIERARCHY_SYMBOLS,
+} from "@/consts";
 
 interface GanttChartProps {
   issues: LinearIssue[];
@@ -44,59 +56,29 @@ interface TimelineItem {
 }
 
 function getProgressFromState(stateType: string): number {
-  switch (stateType) {
-    case "completed":
-      return 100;
-    case "started":
-      return 50;
-    default:
-      return 0;
+  if (stateType in PROGRESS_BY_STATE) {
+    return PROGRESS_BY_STATE[stateType as keyof typeof PROGRESS_BY_STATE];
   }
+  return PROGRESS_BY_STATE.default;
 }
 
 // Assignee-based color generation
 function getAssigneeColor(assigneeId: string | undefined): string {
-  if (!assigneeId) return "#6b7280"; // gray-500
-
-  const colors = [
-    "#ef4444", // red-500
-    "#f97316", // orange-500
-    "#eab308", // yellow-500
-    "#22c55e", // green-500
-    "#06b6d4", // cyan-500
-    "#3b82f6", // blue-500
-    "#8b5cf6", // violet-500
-    "#ec4899", // pink-500
-    "#f59e0b", // amber-500
-    "#10b981", // emerald-500
-    "#6366f1", // indigo-500
-    "#d946ef", // fuchsia-500
-  ];
+  if (!assigneeId) return DEFAULT_ASSIGNEE_COLOR;
 
   // Simple hash function to get consistent color for same assignee
   let hash = 0;
   for (let i = 0; i < assigneeId.length; i++) {
     hash = assigneeId.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return colors[Math.abs(hash) % colors.length];
+  return ASSIGNEE_COLORS[Math.abs(hash) % ASSIGNEE_COLORS.length];
 }
 
 function getStatusColor(stateType: string): string {
-  switch (stateType) {
-    case "completed":
-      return "text-green-400"; // Green for completed
-    case "started":
-      return "text-blue-400"; // Blue for in progress
-    case "canceled":
-    case "cancelled":
-      return "text-red-400"; // Red for canceled
-    case "unstarted":
-      return "text-gray-400"; // Gray for not started
-    case "backlog":
-      return "text-yellow-400"; // Yellow for backlog
-    default:
-      return "text-gray-400"; // Default gray
+  if (stateType in STATE_COLORS) {
+    return STATE_COLORS[stateType as keyof typeof STATE_COLORS];
   }
+  return STATE_COLORS.default;
 }
 
 // Removed - now using utility function from @/utils/date
@@ -138,7 +120,7 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
 
       return {
         level,
-        path: path.join(' > ')
+        path: path.join(HIERARCHY_SEPARATOR)
       };
     };
 
@@ -200,20 +182,11 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
 
   // Sort items by assignee, then group parent tasks before their children
   const sortedItems = useMemo(() => {
-    // Define state type priority order
-    const stateTypePriority: Record<string, number> = {
-      unstarted: 0,
-      backlog: 1,
-      started: 2,
-      completed: 3,
-      canceled: 4,
-      cancelled: 4, // Alternative spelling
-    };
 
     return timelineItems.sort((a, b) => {
       // First sort by assignee (unassigned items go to the end)
-      const aAssignee = a.assignee?.displayName || "zz_unassigned";
-      const bAssignee = b.assignee?.displayName || "zz_unassigned";
+      const aAssignee = a.assignee?.displayName || UNASSIGNED_SORT_KEY;
+      const bAssignee = b.assignee?.displayName || UNASSIGNED_SORT_KEY;
 
       if (aAssignee !== bAssignee) {
         return aAssignee.localeCompare(bAssignee);
@@ -235,8 +208,8 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
       }
 
       // Same start date - sort by state priority
-      const aPriority = stateTypePriority[a.state.type] ?? 999;
-      const bPriority = stateTypePriority[b.state.type] ?? 999;
+      const aPriority = STATE_TYPE_PRIORITY[a.state.type] ?? 999;
+      const bPriority = STATE_TYPE_PRIORITY[b.state.type] ?? 999;
 
       if (aPriority !== bPriority) {
         return aPriority - bPriority;
@@ -339,7 +312,7 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
                         ? "bg-gray-700 text-gray-400"
                         : "text-gray-300"
                   }`}
-                  style={{ minWidth: "40px" }}
+                  style={{ minWidth: `${MIN_COLUMN_WIDTH_PX}px` }}
                 >
                   {formatDateShort(date)}
                 </div>
@@ -365,11 +338,11 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
                   {/* Hierarchy indicator with tree lines */}
                   <div
                     className="flex items-center space-x-1"
-                    style={{ paddingLeft: (item.hierarchyLevel && item.hierarchyLevel > 0) ? `${item.hierarchyLevel * 16}px` : '0px' }}
+                    style={{ paddingLeft: (item.hierarchyLevel && item.hierarchyLevel > 0) ? `${item.hierarchyLevel * HIERARCHY_INDENT_PX}px` : '0px' }}
                   >
                     {item.hierarchyLevel !== undefined && item.hierarchyLevel > 0 ? (
                       <span className="text-gray-400 text-xs font-mono">
-                        |_
+                        {HIERARCHY_SYMBOLS.CHILD_PREFIX}
                       </span>
                     ) : null}
                     <span className="text-xs font-mono px-2 py-1 rounded flex-shrink-0 mt-0.5 text-gray-300 bg-gray-700">
@@ -424,7 +397,7 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
                               ? "bg-gray-700/30"
                               : ""
                         }`}
-                        style={{ minWidth: "40px" }}
+                        style={{ minWidth: `${MIN_COLUMN_WIDTH_PX}px` }}
                       />
                     );
                   })}
