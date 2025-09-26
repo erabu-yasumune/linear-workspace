@@ -4,11 +4,21 @@
 # 言語設定
 language: ja
 
+# レビュープロファイル（建設的だが寛容）
+profile: "chill"
+
 # レビュー設定
 reviews:
   # プルリクエストの自動レビューを有効化
   auto_review:
     enabled: true
+
+  # ツール統合
+  tools:
+    biome:
+      enabled: true
+    typescript:
+      enabled: true
 
   # コメント設定
   comment_style: descriptive
@@ -52,10 +62,19 @@ path_filters:
     - "dist/**"
     - "build/**"
     - "coverage/**"
-    - "*.d.ts"
+    - "**/*.d.ts"
+    - "public/**"
+    - ".claude/**"
 
 # レビューモード
 review_mode: comprehensive
+
+# マージ前チェック
+pre_merge_checks:
+  title:
+    mode: "warning"
+  description:
+    mode: "off"  # PR説明は自動生成されるため
 
 # その他設定
 settings:

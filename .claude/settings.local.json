@@ -9,7 +9,11 @@
       "Bash(npx tsc:*)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh api:*)",
+      "Bash(gh pr:*)",
+      "WebFetch(domain:docs.coderabbit.ai)"
     ],
     "deny": [],
     "ask": []
