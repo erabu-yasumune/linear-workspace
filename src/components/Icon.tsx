@@ -7,11 +7,16 @@ interface IconProps {
   filled?: boolean;
 }
 
-export function Icon({ name, className = "", size = "md", filled = false }: IconProps) {
+export function Icon({
+  name,
+  className = "",
+  size = "md",
+  filled = false,
+}: IconProps) {
   const sizeClasses = {
     sm: "text-base", // 16px
-    md: "text-lg",  // 18px
-    lg: "text-xl",  // 20px
+    md: "text-lg", // 18px
+    lg: "text-xl", // 20px
     xl: "text-2xl", // 24px
   };
 
@@ -21,7 +26,7 @@ export function Icon({ name, className = "", size = "md", filled = false }: Icon
       style={{
         fontVariationSettings: filled
           ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24"
-          : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24"
+          : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
       }}
     >
       {name}

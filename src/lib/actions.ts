@@ -1,6 +1,7 @@
-'use server'
+"use server";
 
 import { LinearClient } from "@linear/sdk";
+import { toISOString } from "@/utils/date";
 
 if (!process.env.LINEAR_API_KEY) {
   throw new Error("LINEAR_API_KEY is not set in environment variables");
@@ -13,7 +14,10 @@ const linearClient = new LinearClient({
 // Add timeout wrapper for API calls
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms);
+    setTimeout(
+      () => reject(new Error(`Operation timed out after ${ms}ms`)),
+      ms,
+    );
   });
   return Promise.race([promise, timeoutPromise]);
 }
@@ -39,9 +43,15 @@ export interface LinearIssue {
     startsAt: string;
     endsAt: string;
   };
+  parent?: {
+    id: string;
+    title: string;
+    identifier: string;
+  };
   createdAt: string;
   updatedAt: string;
   dueDate?: string;
+  startedAt?: string;
   estimate?: number;
 }
 
@@ -60,7 +70,7 @@ export async function getLinearIssues(): Promise<LinearIssue[]> {
         includeArchived: false,
         first: 100,
       }),
-      10000 // 10 second timeout
+      10000, // 10 second timeout
     );
 
     const validIssues: LinearIssue[] = [];
@@ -70,6 +80,7 @@ export async function getLinearIssues(): Promise<LinearIssue[]> {
         const state = await issue.state;
         const assignee = await issue.assignee;
         const cycle = await issue.cycle;
+        const parent = await issue.parent;
 
         // Skip issues without a state
         if (!state) {
@@ -97,20 +108,28 @@ export async function getLinearIssues(): Promise<LinearIssue[]> {
             ? {
                 id: cycle.id,
                 name: cycle.name || `Cycle ${cycle.number || "Unknown"}`,
-                startsAt:
-                  cycle.startsAt?.toISOString() || new Date().toISOString(),
-                endsAt: cycle.endsAt?.toISOString() || new Date().toISOString(),
+                startsAt: cycle.startsAt
+                  ? toISOString(cycle.startsAt)
+                  : toISOString(new Date()),
+                endsAt: cycle.endsAt
+                  ? toISOString(cycle.endsAt)
+                  : toISOString(new Date()),
               }
             : undefined,
-          createdAt: issue.createdAt.toISOString(),
-          updatedAt: issue.updatedAt.toISOString(),
-          dueDate: issue.dueDate ? new Date(issue.dueDate).toISOString() : undefined,
+          parent: parent
+            ? {
+                id: parent.id,
+                title: parent.title || "Untitled",
+                identifier: parent.identifier,
+              }
+            : undefined,
+          createdAt: toISOString(issue.createdAt),
+          updatedAt: toISOString(issue.updatedAt),
+          dueDate: issue.dueDate ? toISOString(issue.dueDate) : undefined,
+          startedAt: issue.startedAt ? toISOString(issue.startedAt) : undefined,
           estimate: issue.estimate || undefined,
         });
-      } catch (issueError) {
-        // Skip individual issue processing errors silently
-        continue;
-      }
+      } catch (issueError) {}
     }
 
     return validIssues;
@@ -129,14 +148,18 @@ export async function getLinearCycles(): Promise<LinearCycle[]> {
       linearClient.cycles({
         first: 50,
       }),
-      10000 // 10 second timeout
+      10000, // 10 second timeout
     );
 
     return cycles.nodes.map((cycle) => ({
       id: cycle.id,
       name: cycle.name || `Cycle ${cycle.number || "Unknown"}`,
-      startsAt: cycle.startsAt?.toISOString() || new Date().toISOString(),
-      endsAt: cycle.endsAt?.toISOString() || new Date().toISOString(),
+      startsAt: cycle.startsAt
+        ? toISOString(cycle.startsAt)
+        : toISOString(new Date()),
+      endsAt: cycle.endsAt
+        ? toISOString(cycle.endsAt)
+        : toISOString(new Date()),
       number: cycle.number,
     }));
   } catch (error) {

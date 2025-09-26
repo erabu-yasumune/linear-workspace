@@ -11,12 +11,12 @@ interface LoadingSpinnerProps {
 export function LoadingSpinner({
   size = "md",
   message = "読み込み中...",
-  className = ""
+  className = "",
 }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: "w-4 h-4",
     md: "w-6 h-6",
-    lg: "w-8 h-8"
+    lg: "w-8 h-8",
   };
 
   return (
@@ -31,7 +31,9 @@ export function LoadingSpinner({
   );
 }
 
-export function FullPageLoader({ message = "Linearからデータを読み込んでいます..." }) {
+export function FullPageLoader({
+  message = "Linearからデータを読み込んでいます...",
+}) {
   return (
     <div className="min-h-screen bg-[#0d1117] text-white flex items-center justify-center">
       <LoadingSpinner size="lg" message={message} />

@@ -1,18 +1,26 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useMemo, useState, useTransition } from "react";
+import {
+  getLinearCycles,
+  getLinearIssues,
+  type LinearCycle,
+  type LinearIssue,
+} from "@/lib/actions";
 import { GanttChart } from "./GanttChart";
+import { LoadingSpinner } from "./LoadingSpinner";
 import { SyncButton } from "./SyncButton";
 import { FilterControls } from "./ViewToggle";
-import { LoadingSpinner } from "./LoadingSpinner";
-import { getLinearIssues, getLinearCycles, type LinearIssue, type LinearCycle } from "@/lib/actions";
 
 interface LinearWorkspaceProps {
   initialIssues: LinearIssue[];
   initialCycles: LinearCycle[];
 }
 
-export function LinearWorkspace({ initialIssues, initialCycles }: LinearWorkspaceProps) {
+export function LinearWorkspace({
+  initialIssues,
+  initialCycles,
+}: LinearWorkspaceProps) {
   const [issues, setIssues] = useState(initialIssues);
   const [cycles, setCycles] = useState(initialCycles);
   const [selectedCycle, setSelectedCycle] = useState<string | null>(null);
@@ -25,7 +33,7 @@ export function LinearWorkspace({ initialIssues, initialCycles }: LinearWorkspac
       try {
         const [newIssues, newCycles] = await Promise.all([
           getLinearIssues(),
-          getLinearCycles()
+          getLinearCycles(),
         ]);
         setIssues(newIssues);
         setCycles(newCycles);
@@ -42,15 +50,17 @@ export function LinearWorkspace({ initialIssues, initialCycles }: LinearWorkspac
 
     // Filter by cycle
     if (selectedCycle) {
-      filtered = filtered.filter(issue => issue.cycle?.id === selectedCycle);
+      filtered = filtered.filter((issue) => issue.cycle?.id === selectedCycle);
     }
 
     // Filter by assignee
     if (selectedAssignee) {
       if (selectedAssignee === "unassigned") {
-        filtered = filtered.filter(issue => !issue.assignee);
+        filtered = filtered.filter((issue) => !issue.assignee);
       } else {
-        filtered = filtered.filter(issue => issue.assignee?.id === selectedAssignee);
+        filtered = filtered.filter(
+          (issue) => issue.assignee?.id === selectedAssignee,
+        );
       }
     }
 
@@ -89,7 +99,9 @@ export function LinearWorkspace({ initialIssues, initialCycles }: LinearWorkspac
       ) : (
         <GanttChart
           issues={filteredIssues}
-          selectedCycle={selectedCycle ? cycles.find(c => c.id === selectedCycle) : null}
+          selectedCycle={
+            selectedCycle ? cycles.find((c) => c.id === selectedCycle) : null
+          }
         />
       )}
     </>

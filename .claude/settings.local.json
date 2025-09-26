@@ -6,7 +6,10 @@
       "Bash(npm run format:*)",
       "Bash(npx biome check:*)",
       "Bash(npm run build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

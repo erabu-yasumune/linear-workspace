@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@linear/sdk": "^60.0.0",
+    "dayjs": "^1.11.18",
     "next": "15.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0"

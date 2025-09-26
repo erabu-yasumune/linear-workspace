@@ -1,8 +1,13 @@
 import { Suspense } from "react";
-import { getLinearIssues, getLinearCycles, type LinearIssue, type LinearCycle } from "@/lib/actions";
+import { Icon } from "@/components/Icon";
 import { LinearWorkspace } from "@/components/LinearWorkspace";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { Icon } from "@/components/Icon";
+import {
+  getLinearCycles,
+  getLinearIssues,
+  type LinearCycle,
+  type LinearIssue,
+} from "@/lib/actions";
 
 export default async function Home() {
   let issues: LinearIssue[];
@@ -12,7 +17,7 @@ export default async function Home() {
   try {
     const [issuesResult, cyclesResult] = await Promise.all([
       getLinearIssues(),
-      getLinearCycles()
+      getLinearCycles(),
     ]);
     issues = issuesResult;
     cycles = cyclesResult;
@@ -30,11 +35,11 @@ export default async function Home() {
         state: {
           id: "state-1",
           name: "In Progress",
-          type: "started"
+          type: "started",
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      }
+      },
     ];
     cycles = [];
   }
@@ -73,13 +78,15 @@ export default async function Home() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        <Suspense fallback={
-          <LoadingSpinner
-            size="lg"
-            message="Linearからデータを読み込んでいます..."
-            className="py-16"
-          />
-        }>
+        <Suspense
+          fallback={
+            <LoadingSpinner
+              size="lg"
+              message="Linearからデータを読み込んでいます..."
+              className="py-16"
+            />
+          }
+        >
           <LinearWorkspace initialIssues={issues} initialCycles={cycles} />
         </Suspense>
       </main>

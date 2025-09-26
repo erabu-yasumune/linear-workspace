@@ -26,23 +26,20 @@ export function FilterControls({
   selectedAssignee,
   onCycleChange,
   onAssigneeChange,
-  isLoading = false
+  isLoading = false,
 }: FilterProps) {
   // Extract unique assignees from issues
   const assignees: Assignee[] = Array.from(
     new Map(
       issues
-        .filter(issue => issue.assignee)
-        .map(issue => [
-          issue.assignee!.id,
-          issue.assignee!
-        ])
-    ).values()
+        .filter((issue) => issue.assignee)
+        .map((issue) => [issue.assignee!.id, issue.assignee!]),
+    ).values(),
   ).sort((a, b) => a.displayName.localeCompare(b.displayName));
 
   // Find selected cycle details for period display
   const selectedCycleData = selectedCycle
-    ? cycles.find(cycle => cycle.id === selectedCycle)
+    ? cycles.find((cycle) => cycle.id === selectedCycle)
     : null;
 
   // Format cycle period
