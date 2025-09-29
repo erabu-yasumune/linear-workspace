@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Icon } from "./Icon";
 
 interface SyncButtonProps {
@@ -26,6 +27,18 @@ function formatLastSync(date: Date): string {
 }
 
 export function SyncButton({ onSync, loading, lastSync }: SyncButtonProps) {
+  const [, forceUpdate] = useState({});
+
+  useEffect(() => {
+    // 1分ごとにコンポーネントを強制再レンダリングして最終同期時刻を更新
+    const timer = setInterval(() => {
+      forceUpdate({});
+    }, 60000); // 60秒 = 60000ミリ秒
+
+    // コンポーネントのクリーンアップ時にタイマーを削除
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div className="flex items-center space-x-4">
       {lastSync && (
