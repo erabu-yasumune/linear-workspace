@@ -6,7 +6,7 @@ Linear APIを使用してタスクをガントチャート形式で表示するN
 
 1. 環境ファイルをコピーして設定:
    ```bash
-   cp /Users/yerabu/dev/linear-workspace/.env.example .env
+   cp ~/dev/linear-workspace/.env.example .env
    ```
 
 2. `.env.local`ファイル内の`LINEAR_API_KEY`にLinearのAPIキーを設定:
