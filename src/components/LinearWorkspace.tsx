@@ -8,6 +8,7 @@ import {
   type LinearIssue,
 } from "@/lib/actions";
 import { GanttChart } from "./GanttChart";
+import { BurndownChart } from "./BurndownChart";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { SyncButton } from "./SyncButton";
 import { FilterControls } from "./ViewToggle";
@@ -70,7 +71,7 @@ export function LinearWorkspace({
   return (
     <>
       {/* Controls */}
-      <div className="border-b border-gray-800 bg-[#1c1c1e] -mx-6 px-6 py-4 mb-8">
+      <div className="border-b border-gray-800 bg-[#1c1c1e] -mx-4 px-4 py-4 mb-8">
         <div className="flex items-center justify-between">
           <FilterControls
             cycles={cycles}
@@ -97,12 +98,27 @@ export function LinearWorkspace({
           className="py-12"
         />
       ) : (
-        <GanttChart
-          issues={filteredIssues}
-          selectedCycle={
-            selectedCycle ? cycles.find((c) => c.id === selectedCycle) : null
-          }
-        />
+        <div className="space-y-8">
+          {/* バーダウンチャート (常に上に配置) */}
+          <div>
+            <BurndownChart
+              issues={filteredIssues}
+              selectedCycle={
+                selectedCycle ? cycles.find((c) => c.id === selectedCycle) : null
+              }
+            />
+          </div>
+
+          {/* ガントチャート (常に下に配置) */}
+          <div>
+            <GanttChart
+              issues={filteredIssues}
+              selectedCycle={
+                selectedCycle ? cycles.find((c) => c.id === selectedCycle) : null
+              }
+            />
+          </div>
+        </div>
       )}
     </>
   );

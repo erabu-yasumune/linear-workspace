@@ -67,7 +67,7 @@ export default async function Home() {
     <div className="min-h-screen bg-[#0d1117] text-white">
       {/* Header */}
       <header className="border-b border-gray-800 bg-[#0d1117]">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-white flex items-center space-x-2">
               <span>Linear Gantt</span>
@@ -77,7 +77,7 @@ export default async function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="container mx-auto px-4 py-8">
         <Suspense
           fallback={
             <LoadingSpinner
