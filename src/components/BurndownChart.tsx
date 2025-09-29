@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { PROGRESS_BY_STATE } from "@/consts";
 import type { LinearCycle, LinearIssue } from "@/lib/actions";
-import { formatDateShort, generateDateGrid, parseDate } from "@/utils/date";
+import { formatDateShort, generateDateGrid, parseDate, getToday } from "@/utils/date";
 
 interface BurndownChartProps {
   issues: LinearIssue[];
@@ -183,6 +183,17 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
 
   const dataPoints = burndownData;
 
+  // 今日の日付を取得
+  const today = useMemo(() => getToday(), []);
+
+  // 今日の位置を計算（データポイント内のインデックスを求める）
+  const todayIndex = useMemo(() => {
+    return dataPoints.findIndex((d) => {
+      const dataDate = parseDate(d.date).startOf("day");
+      return dataDate.isSame(today, "day");
+    });
+  }, [dataPoints, today]);
+
   // SVGの描画設定
   const chartWidth = 1200;
   const chartHeight = 500;
@@ -344,6 +355,29 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
           {/* 実際線 */}
           <path d={actualPath} fill="none" stroke="#EF4444" strokeWidth="3" />
 
+          {/* 今日の縦線 */}
+          {todayIndex >= 0 && (
+            <g>
+              <line
+                x1={scaleX(todayIndex)}
+                y1={padding.top}
+                x2={scaleX(todayIndex)}
+                y2={padding.top + graphHeight}
+                stroke="#10B981"
+                strokeWidth="2"
+                strokeDasharray="3,3"
+              />
+              <text
+                x={scaleX(todayIndex)}
+                y={padding.top - 5}
+                textAnchor="middle"
+                className="text-xs fill-green-400 font-medium"
+              >
+                Today
+              </text>
+            </g>
+          )}
+
           {/* データポイント */}
           {dataPoints.map((d, i) => {
             if (i % Math.ceil(dataPoints.length / 10) === 0) {
@@ -404,6 +438,10 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
           <div className="flex items-center space-x-2">
             <div className="w-4 h-0 border-t-2 border-red-400"></div>
             <span className="text-sm text-gray-400">実際線 (完了ベース)</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-0 border-t-2 border-dashed border-green-400"></div>
+            <span className="text-sm text-gray-400">今日</span>
           </div>
         </div>
       </div>
