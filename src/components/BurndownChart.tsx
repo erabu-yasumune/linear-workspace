@@ -191,14 +191,19 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
   const graphHeight = chartHeight - padding.top - padding.bottom;
 
   const maxY = Math.max(
+    1,
     ...dataPoints.map((d) =>
       Math.max(d.plannedRemaining, d.actualRemaining, d.totalPlanned),
     ),
   );
   const scaleY = (value: number) =>
     padding.top + (1 - value / maxY) * graphHeight;
-  const scaleX = (index: number) =>
-    padding.left + (index / (dataPoints.length - 1)) * graphWidth;
+  const scaleX = (index: number) => {
+    if (dataPoints.length <= 1) {
+      return padding.left + graphWidth / 2;
+    }
+    return padding.left + (index / (dataPoints.length - 1)) * graphWidth;
+  };
 
   // 計画線のパス
   const plannedPath = dataPoints
