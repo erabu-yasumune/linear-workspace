@@ -437,11 +437,7 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-4 h-0 border-t-2 border-red-400"></div>
-            <span className="text-sm text-gray-400">実際線 (完了ベース)</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-0 border-t-2 border-dashed border-green-400"></div>
-            <span className="text-sm text-gray-400">今日</span>
+            <span className="text-sm text-gray-400">実績線 (完了ベース)</span>
           </div>
         </div>
       </div>
