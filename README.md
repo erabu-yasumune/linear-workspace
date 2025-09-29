@@ -4,17 +4,17 @@ Linear APIを使用してタスクをガントチャート形式で表示するN
 
 ## セットアップ
 
-1. 環境ファイルをコピーして設定:
+1. 環境ファイルをコピーして設定(プロジェクトのルートディレクトリで実施):
    ```bash
-   cp ~/dev/linear-workspace/.env.example .env
+   cp .env.example .env
    ```
 
-2. `.env.local`ファイル内の`LINEAR_API_KEY`にLinearのAPIキーを設定:
+3. `.env.local`ファイル内の`LINEAR_API_KEY`にLinearのAPIキーを設定:
    ```
    LINEAR_API_KEY={your_linear_api_key_here}
    ```
 
-3. 依存関係をインストール:
+4. 依存関係をインストール:
    ```bash
    npm install
    ```
