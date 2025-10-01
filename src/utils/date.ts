@@ -146,3 +146,11 @@ export function generateDateGrid(
 
   return days;
 }
+
+/**
+ * YYYY-MM-DD形式の文字列をUTC午前0時のISO文字列に変換
+ * タイムゾーンの影響を受けずに日付を正確に保持します
+ */
+export function dateStringToUTCISOString(dateString: string): string {
+  return dayjs.utc(dateString).startOf("day").toISOString();
+}

@@ -1,7 +1,7 @@
 "use server";
 
 import { LinearClient } from "@linear/sdk";
-import { toISOString } from "@/utils/date";
+import { toISOString, dateStringToUTCISOString } from "@/utils/date";
 
 if (!process.env.LINEAR_API_KEY) {
   throw new Error("LINEAR_API_KEY is not set in environment variables");
@@ -254,8 +254,7 @@ export async function createBulkIssues(
           issuePayload.estimate = issue.estimate;
         }
         if (issue.dueDate) {
-          // Convert YYYY-MM-DD to ISO string
-          issuePayload.dueDate = new Date(issue.dueDate).toISOString();
+          issuePayload.dueDate = dateStringToUTCISOString(issue.dueDate);
         }
         if (issue.parentId) {
           issuePayload.parentId = issue.parentId;
