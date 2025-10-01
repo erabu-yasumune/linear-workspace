@@ -1,6 +1,18 @@
 "use client";
 
 import { useMemo } from "react";
+import {
+  ASSIGNEE_COLORS,
+  DEFAULT_ASSIGNEE_COLOR,
+  HIERARCHY_INDENT_PX,
+  HIERARCHY_SEPARATOR,
+  HIERARCHY_SYMBOLS,
+  MIN_COLUMN_WIDTH_PX,
+  PROGRESS_BY_STATE,
+  STATE_COLORS,
+  STATE_TYPE_PRIORITY,
+  UNASSIGNED_SORT_KEY,
+} from "@/consts";
 import type { LinearCycle, LinearIssue } from "@/lib/actions";
 import {
   formatDateShort,
@@ -13,18 +25,6 @@ import {
   isWeekend,
   parseDate,
 } from "@/utils/date";
-import {
-  ASSIGNEE_COLORS,
-  DEFAULT_ASSIGNEE_COLOR,
-  STATE_COLORS,
-  PROGRESS_BY_STATE,
-  STATE_TYPE_PRIORITY,
-  HIERARCHY_INDENT_PX,
-  UNASSIGNED_SORT_KEY,
-  HIERARCHY_SEPARATOR,
-  MIN_COLUMN_WIDTH_PX,
-  HIERARCHY_SYMBOLS,
-} from "@/consts";
 
 interface GanttChartProps {
   issues: LinearIssue[];
@@ -103,9 +103,11 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
     });
 
     // Function to calculate hierarchy level and path
-    const calculateHierarchy = (issue: LinearIssue): { level: number; path: string } => {
+    const calculateHierarchy = (
+      issue: LinearIssue,
+    ): { level: number; path: string } => {
       let level = 0;
-      let path: string[] = [];
+      const path: string[] = [];
       let currentIssue = issue;
 
       // Walk up the parent chain to calculate depth and build path
@@ -120,7 +122,7 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
 
       return {
         level,
-        path: path.join(HIERARCHY_SEPARATOR)
+        path: path.join(HIERARCHY_SEPARATOR),
       };
     };
 
@@ -182,7 +184,6 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
 
   // Sort items by assignee, then group parent tasks before their children
   const sortedItems = useMemo(() => {
-
     return timelineItems.sort((a, b) => {
       // First sort by assignee (unassigned items go to the end)
       const aAssignee = a.assignee?.displayName || UNASSIGNED_SORT_KEY;
@@ -193,7 +194,11 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
       }
 
       // Within same assignee, sort by hierarchy path to maintain parent-child-grandchild order
-      if (a.hierarchyPath && b.hierarchyPath && a.hierarchyPath !== b.hierarchyPath) {
+      if (
+        a.hierarchyPath &&
+        b.hierarchyPath &&
+        a.hierarchyPath !== b.hierarchyPath
+      ) {
         return a.hierarchyPath.localeCompare(b.hierarchyPath);
       }
 
@@ -338,9 +343,15 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
                   {/* Hierarchy indicator with tree lines */}
                   <div
                     className="flex items-center space-x-1"
-                    style={{ paddingLeft: (item.hierarchyLevel && item.hierarchyLevel > 0) ? `${item.hierarchyLevel * HIERARCHY_INDENT_PX}px` : '0px' }}
+                    style={{
+                      paddingLeft:
+                        item.hierarchyLevel && item.hierarchyLevel > 0
+                          ? `${item.hierarchyLevel * HIERARCHY_INDENT_PX}px`
+                          : "0px",
+                    }}
                   >
-                    {item.hierarchyLevel !== undefined && item.hierarchyLevel > 0 ? (
+                    {item.hierarchyLevel !== undefined &&
+                    item.hierarchyLevel > 0 ? (
                       <span className="text-gray-400 text-xs font-mono">
                         {HIERARCHY_SYMBOLS.CHILD_PREFIX}
                       </span>

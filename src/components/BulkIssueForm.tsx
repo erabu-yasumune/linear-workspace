@@ -4,12 +4,13 @@ import { useState, useTransition } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { z } from "zod";
+import { ESTIMATE_OPTIONS } from "@/constants/linear";
 import {
   createBulkIssues,
   type LinearCycle,
+  type LinearTeam,
   type LinearUser,
 } from "@/lib/actions";
-import { ESTIMATE_OPTIONS } from "@/constants/linear";
 import { bulkIssueInputSchema } from "@/lib/validations/issue";
 import { LoadingSpinner } from "./LoadingSpinner";
 
@@ -27,6 +28,7 @@ interface BulkIssueRow {
 interface BulkIssueFormProps {
   cycles: LinearCycle[];
   users: LinearUser[];
+  teams: LinearTeam[];
   issues: Array<{ id: string; title: string; identifier: string }>;
   onSuccess?: () => void;
 }
@@ -34,10 +36,14 @@ interface BulkIssueFormProps {
 export function BulkIssueForm({
   cycles,
   users,
+  teams,
   issues,
   onSuccess,
 }: BulkIssueFormProps) {
   const [isPending, startTransition] = useTransition();
+  const [selectedTeamId, setSelectedTeamId] = useState<string>(
+    teams.length > 0 ? teams[0].id : "",
+  );
   const [rows, setRows] = useState<BulkIssueRow[]>([
     {
       id: crypto.randomUUID(),
@@ -88,6 +94,12 @@ export function BulkIssueForm({
     e.preventDefault();
     setError(null);
 
+    // Validate team selection
+    if (!selectedTeamId) {
+      setError("Teamを選択してください");
+      return;
+    }
+
     // Filter rows with title
     const rowsWithTitle = rows.filter((row) => row.title.trim() !== "");
     if (rowsWithTitle.length === 0) {
@@ -102,7 +114,7 @@ export function BulkIssueForm({
       cycleId: row.cycleId || undefined,
       estimate: row.estimate ? Number(row.estimate) : undefined,
       dueDate: row.dueDate
-        ? row.dueDate.toISOString().split("T")[0]
+        ? `${row.dueDate.getFullYear()}-${String(row.dueDate.getMonth() + 1).padStart(2, "0")}-${String(row.dueDate.getDate()).padStart(2, "0")}`
         : undefined,
       parentId: row.parentId || undefined,
       assigneeId: row.assigneeId || undefined,
@@ -120,8 +132,7 @@ export function BulkIssueForm({
 
     startTransition(async () => {
       try {
-
-        await createBulkIssues(issueData);
+        await createBulkIssues(issueData, selectedTeamId);
 
         // Reset form
         setRows([
@@ -155,6 +166,30 @@ export function BulkIssueForm({
         </div>
       )}
 
+      {/* Team Selector */}
+      <div className="bg-[#1c1c1e] rounded-lg border border-gray-800 p-4">
+        <label
+          htmlFor="team-select"
+          className="block text-sm font-medium text-gray-300 mb-2"
+        >
+          Team *
+        </label>
+        <select
+          id="team-select"
+          value={selectedTeamId}
+          onChange={(e) => setSelectedTeamId(e.target.value)}
+          className="w-full max-w-md bg-[#2c2c2e] text-white text-sm px-3 py-2 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
+          required
+        >
+          <option value="">Select a team</option>
+          {teams.map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.name} ({team.key})
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="overflow-x-auto bg-[#1c1c1e] rounded-lg border border-gray-800">
         <table className="w-full text-xs">
           <thead className="bg-[#2c2c2e] border-b border-gray-800">
@@ -187,7 +222,10 @@ export function BulkIssueForm({
           </thead>
           <tbody className="divide-y divide-gray-800">
             {rows.map((row) => (
-              <tr key={row.id} className="hover:bg-[#2c2c2e]/50 transition-colors">
+              <tr
+                key={row.id}
+                className="hover:bg-[#2c2c2e]/50 transition-colors"
+              >
                 <td className="px-3 py-2 align-top">
                   <input
                     type="text"
@@ -210,7 +248,9 @@ export function BulkIssueForm({
                 <td className="px-3 py-2 align-top">
                   <select
                     value={row.cycleId}
-                    onChange={(e) => updateRow(row.id, "cycleId", e.target.value)}
+                    onChange={(e) =>
+                      updateRow(row.id, "cycleId", e.target.value)
+                    }
                     className="w-full bg-[#2c2c2e] text-white text-xs px-2 py-1.5 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
                   >
                     <option value="">No Cycle</option>
@@ -224,7 +264,9 @@ export function BulkIssueForm({
                 <td className="px-3 py-2 align-top">
                   <select
                     value={row.estimate}
-                    onChange={(e) => updateRow(row.id, "estimate", e.target.value)}
+                    onChange={(e) =>
+                      updateRow(row.id, "estimate", e.target.value)
+                    }
                     className="w-full bg-[#2c2c2e] text-white text-xs px-2 py-1.5 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
                   >
                     <option value="">No Estimate</option>
@@ -248,7 +290,9 @@ export function BulkIssueForm({
                 <td className="px-3 py-2 align-top">
                   <select
                     value={row.assigneeId}
-                    onChange={(e) => updateRow(row.id, "assigneeId", e.target.value)}
+                    onChange={(e) =>
+                      updateRow(row.id, "assigneeId", e.target.value)
+                    }
                     className="w-full bg-[#2c2c2e] text-white text-xs px-2 py-1.5 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
                   >
                     <option value="">No Assignee</option>
@@ -262,7 +306,9 @@ export function BulkIssueForm({
                 <td className="px-3 py-2 align-top">
                   <select
                     value={row.parentId}
-                    onChange={(e) => updateRow(row.id, "parentId", e.target.value)}
+                    onChange={(e) =>
+                      updateRow(row.id, "parentId", e.target.value)
+                    }
                     className="w-full bg-[#2c2c2e] text-white text-xs px-2 py-1.5 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
                   >
                     <option value="">No Parent</option>

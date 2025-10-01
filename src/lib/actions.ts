@@ -1,7 +1,7 @@
 "use server";
 
 import { LinearClient } from "@linear/sdk";
-import { toISOString, dateStringToUTCISOString } from "@/utils/date";
+import { dateStringToUTCISOString, toISOString } from "@/utils/date";
 
 if (!process.env.LINEAR_API_KEY) {
   throw new Error("LINEAR_API_KEY is not set in environment variables");
@@ -68,6 +68,12 @@ export interface LinearUser {
   name: string;
   displayName: string;
   email: string;
+}
+
+export interface LinearTeam {
+  id: string;
+  key: string;
+  name: string;
 }
 
 export async function getLinearIssues(): Promise<LinearIssue[]> {
@@ -202,6 +208,29 @@ export async function getLinearUsers(): Promise<LinearUser[]> {
   }
 }
 
+export async function getLinearTeams(): Promise<LinearTeam[]> {
+  try {
+    const teams = await withTimeout(
+      linearClient.teams({
+        first: 50,
+      }),
+      10000, // 10 second timeout
+    );
+
+    return teams.nodes.map((team) => ({
+      id: team.id,
+      key: team.key,
+      name: team.name,
+    }));
+  } catch (error) {
+    console.error("Failed to fetch teams from Linear:", error);
+    if (error instanceof Error) {
+      throw new Error(`Linear API Error: ${error.message}`);
+    }
+    throw new Error("Failed to fetch teams from Linear API");
+  }
+}
+
 export interface BulkIssueInput {
   title: string;
   description?: string;
@@ -214,16 +243,17 @@ export interface BulkIssueInput {
 
 export async function createBulkIssues(
   issues: BulkIssueInput[],
+  teamId: string,
 ): Promise<void> {
   // Note: Validation is performed on the client side using Zod schema
   // This ensures type safety and prevents invalid data from being sent
   try {
-    // Get the team ID (required for issue creation)
+    // Validate that the team exists
     const teams = await withTimeout(linearClient.teams(), 10000);
-    const team = teams.nodes[0];
+    const team = teams.nodes.find((t) => t.id === teamId);
 
     if (!team) {
-      throw new Error("No team found in Linear workspace");
+      throw new Error(`Team with ID ${teamId} not found in Linear workspace`);
     }
 
     // Create issues sequentially to avoid rate limiting
@@ -241,7 +271,7 @@ export async function createBulkIssues(
           assigneeId?: string;
         } = {
           title: issue.title,
-          teamId: team.id,
+          teamId: teamId,
         };
 
         if (issue.description) {

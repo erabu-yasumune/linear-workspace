@@ -4,9 +4,11 @@ import { useMemo, useState, useTransition } from "react";
 import {
   getLinearCycles,
   getLinearIssues,
+  getLinearTeams,
   getLinearUsers,
   type LinearCycle,
   type LinearIssue,
+  type LinearTeam,
   type LinearUser,
 } from "@/lib/actions";
 import { BulkIssueForm } from "./BulkIssueForm";
@@ -20,6 +22,7 @@ interface LinearWorkspaceProps {
   initialIssues: LinearIssue[];
   initialCycles: LinearCycle[];
   initialUsers: LinearUser[];
+  initialTeams: LinearTeam[];
 }
 
 type TabType = "chart" | "bulk-create";
@@ -28,10 +31,12 @@ export function LinearWorkspace({
   initialIssues,
   initialCycles,
   initialUsers,
+  initialTeams,
 }: LinearWorkspaceProps) {
   const [issues, setIssues] = useState(initialIssues);
   const [cycles, setCycles] = useState(initialCycles);
   const [users, setUsers] = useState(initialUsers);
+  const [teams, setTeams] = useState(initialTeams);
   const [selectedCycle, setSelectedCycle] = useState<string | null>(null);
   const [selectedAssignee, setSelectedAssignee] = useState<string | null>(null);
   const [lastSync, setLastSync] = useState<Date>(new Date());
@@ -41,14 +46,16 @@ export function LinearWorkspace({
   const handleSync = () => {
     startTransition(async () => {
       try {
-        const [newIssues, newCycles, newUsers] = await Promise.all([
+        const [newIssues, newCycles, newUsers, newTeams] = await Promise.all([
           getLinearIssues(),
           getLinearCycles(),
           getLinearUsers(),
+          getLinearTeams(),
         ]);
         setIssues(newIssues);
         setCycles(newCycles);
         setUsers(newUsers);
+        setTeams(newTeams);
         setLastSync(new Date());
       } catch (error) {
         console.error("Sync failed:", error);
@@ -176,6 +183,7 @@ export function LinearWorkspace({
           <BulkIssueForm
             cycles={cycles}
             users={users}
+            teams={teams}
             issues={issues.map((issue) => ({
               id: issue.id,
               title: issue.title,

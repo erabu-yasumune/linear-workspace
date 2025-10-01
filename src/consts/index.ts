@@ -3,5 +3,5 @@
  * Exports all constants from individual files
  */
 
-export * from './colors';
-export * from './gantt';
+export * from "./colors";
+export * from "./gantt";

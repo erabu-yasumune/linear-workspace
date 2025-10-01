@@ -3,16 +3,22 @@
  */
 
 // Progress state types
-export type ProgressState = 'completed' | 'started';
+export type ProgressState = "completed" | "started";
 
 // State priority types
-export type StateTypePriority = 'unstarted' | 'backlog' | 'started' | 'completed' | 'canceled' | 'cancelled';
+export type StateTypePriority =
+  | "unstarted"
+  | "backlog"
+  | "started"
+  | "completed"
+  | "canceled"
+  | "cancelled";
 
 // Progress values by state type
 export const PROGRESS_BY_STATE: Record<string, number> = {
   completed: 100,
   started: 50,
-  default: 0
+  default: 0,
 };
 
 // State priority for sorting
@@ -35,5 +41,5 @@ export const HIERARCHY_SEPARATOR: string = " > ";
 
 // Hierarchy display symbols
 export const HIERARCHY_SYMBOLS: Record<string, string> = {
-  CHILD_PREFIX: "|_"
+  CHILD_PREFIX: "|_",
 };

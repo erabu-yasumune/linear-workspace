@@ -5,9 +5,11 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import {
   getLinearCycles,
   getLinearIssues,
+  getLinearTeams,
   getLinearUsers,
   type LinearCycle,
   type LinearIssue,
+  type LinearTeam,
   type LinearUser,
 } from "@/lib/actions";
 
@@ -15,17 +17,21 @@ export default async function Home() {
   let issues: LinearIssue[];
   let cycles: LinearCycle[];
   let users: LinearUser[];
+  let teams: LinearTeam[];
   let error: string | null = null;
 
   try {
-    const [issuesResult, cyclesResult, usersResult] = await Promise.all([
-      getLinearIssues(),
-      getLinearCycles(),
-      getLinearUsers(),
-    ]);
+    const [issuesResult, cyclesResult, usersResult, teamsResult] =
+      await Promise.all([
+        getLinearIssues(),
+        getLinearCycles(),
+        getLinearUsers(),
+        getLinearTeams(),
+      ]);
     issues = issuesResult;
     cycles = cyclesResult;
     users = usersResult;
+    teams = teamsResult;
   } catch (err) {
     console.error("Failed to fetch Linear data:", err);
     error = err instanceof Error ? err.message : "Unknown error occurred";
@@ -48,6 +54,7 @@ export default async function Home() {
     ];
     cycles = [];
     users = [];
+    teams = [];
   }
 
   if (error) {
@@ -97,6 +104,7 @@ export default async function Home() {
             initialIssues={issues}
             initialCycles={cycles}
             initialUsers={users}
+            initialTeams={teams}
           />
         </Suspense>
       </main>
