@@ -63,6 +63,13 @@ export interface LinearCycle {
   number: number;
 }
 
+export interface LinearUser {
+  id: string;
+  name: string;
+  displayName: string;
+  email: string;
+}
+
 export async function getLinearIssues(): Promise<LinearIssue[]> {
   try {
     const issues = await withTimeout(
@@ -168,5 +175,113 @@ export async function getLinearCycles(): Promise<LinearCycle[]> {
       throw new Error(`Linear API Error: ${error.message}`);
     }
     throw new Error("Failed to fetch cycles from Linear API");
+  }
+}
+
+export async function getLinearUsers(): Promise<LinearUser[]> {
+  try {
+    const users = await withTimeout(
+      linearClient.users({
+        first: 100,
+      }),
+      10000, // 10 second timeout
+    );
+
+    return users.nodes.map((user) => ({
+      id: user.id,
+      name: user.name,
+      displayName: user.displayName,
+      email: user.email,
+    }));
+  } catch (error) {
+    console.error("Failed to fetch users from Linear:", error);
+    if (error instanceof Error) {
+      throw new Error(`Linear API Error: ${error.message}`);
+    }
+    throw new Error("Failed to fetch users from Linear API");
+  }
+}
+
+export interface BulkIssueInput {
+  title: string;
+  description?: string;
+  cycleId?: string;
+  estimate?: number;
+  dueDate?: string;
+  parentId?: string;
+  assigneeId?: string;
+}
+
+export async function createBulkIssues(
+  issues: BulkIssueInput[],
+): Promise<void> {
+  // Note: Validation is performed on the client side using Zod schema
+  // This ensures type safety and prevents invalid data from being sent
+  try {
+    // Get the team ID (required for issue creation)
+    const teams = await withTimeout(linearClient.teams(), 10000);
+    const team = teams.nodes[0];
+
+    if (!team) {
+      throw new Error("No team found in Linear workspace");
+    }
+
+    // Create issues sequentially to avoid rate limiting
+    const results = [];
+    for (const issue of issues) {
+      try {
+        const issuePayload: {
+          title: string;
+          description?: string;
+          teamId: string;
+          cycleId?: string;
+          estimate?: number;
+          dueDate?: string;
+          parentId?: string;
+          assigneeId?: string;
+        } = {
+          title: issue.title,
+          teamId: team.id,
+        };
+
+        if (issue.description) {
+          issuePayload.description = issue.description;
+        }
+        if (issue.cycleId) {
+          issuePayload.cycleId = issue.cycleId;
+        }
+        if (issue.estimate !== undefined) {
+          issuePayload.estimate = issue.estimate;
+        }
+        if (issue.dueDate) {
+          // Convert YYYY-MM-DD to ISO string
+          issuePayload.dueDate = new Date(issue.dueDate).toISOString();
+        }
+        if (issue.parentId) {
+          issuePayload.parentId = issue.parentId;
+        }
+        if (issue.assigneeId) {
+          issuePayload.assigneeId = issue.assigneeId;
+        }
+
+        const result = await withTimeout(
+          linearClient.createIssue(issuePayload),
+          10000,
+        );
+
+        results.push(result);
+      } catch (issueError) {
+        console.error("Failed to create individual issue:", issueError);
+        throw issueError;
+      }
+    }
+
+    console.log(`Successfully created ${results.length} issues`);
+  } catch (error) {
+    console.error("Failed to create bulk issues:", error);
+    if (error instanceof Error) {
+      throw new Error(`Issue creation failed: ${error.message}`);
+    }
+    throw new Error("Failed to create issues in Linear");
   }
 }

@@ -23,3 +23,60 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* ===========================
+   React DatePicker Styles
+   =========================== */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container {
+  width: 100%;
+}
+
+.react-datepicker {
+  font-family:
+    var(--font-inter), var(--font-noto-sans-jp), system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.75rem;
+  background-color: #2c2c2e;
+  border: 1px solid #4b5563;
+  border-radius: 0.5rem;
+}
+
+.react-datepicker__header {
+  background-color: #1c1c1e;
+  border-bottom: 1px solid #4b5563;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: #c9d1d9;
+}
+
+.react-datepicker__day {
+  color: #c9d1d9;
+}
+
+.react-datepicker__day:hover {
+  background-color: #4b5563;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: #6366f1;
+  color: #ffffff;
+}
+
+.react-datepicker__day--disabled {
+  color: #6b7280;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: #c9d1d9;
+}
+
+.react-datepicker__triangle {
+  display: none;
+}
