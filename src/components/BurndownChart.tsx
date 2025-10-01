@@ -3,7 +3,12 @@
 import { useMemo } from "react";
 import { PROGRESS_BY_STATE } from "@/consts";
 import type { LinearCycle, LinearIssue } from "@/lib/actions";
-import { formatDateShort, generateDateGrid, parseDate, getToday } from "@/utils/date";
+import {
+  formatDateShort,
+  generateDateGrid,
+  getToday,
+  parseDate,
+} from "@/utils/date";
 
 interface BurndownChartProps {
   issues: LinearIssue[];

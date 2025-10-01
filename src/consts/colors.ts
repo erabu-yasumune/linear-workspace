@@ -21,7 +21,13 @@ export const ASSIGNEE_COLORS: string[] = [
 export const DEFAULT_ASSIGNEE_COLOR: string = "#6b7280"; // gray-500
 
 // State types
-export type StateType = 'completed' | 'started' | 'canceled' | 'cancelled' | 'unstarted' | 'backlog';
+export type StateType =
+  | "completed"
+  | "started"
+  | "canceled"
+  | "cancelled"
+  | "unstarted"
+  | "backlog";
 
 // State-based text colors (Tailwind classes)
 export const STATE_COLORS: Record<string, string> = {
@@ -31,5 +37,5 @@ export const STATE_COLORS: Record<string, string> = {
   cancelled: "text-red-400",
   unstarted: "text-gray-400",
   backlog: "text-yellow-400",
-  default: "text-gray-400"
+  default: "text-gray-400",
 };
