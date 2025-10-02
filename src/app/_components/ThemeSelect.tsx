@@ -9,29 +9,27 @@ const THEME_LABELS: Record<ThemeKey, string> = {
   white: "ホワイト",
 };
 
-export function ThemeSelect() {
-  const [currentTheme, setCurrentTheme] = useState<ThemeKey>("black");
+// theme-colorメタタグを更新するヘルパー関数
+function updateThemeColorMeta() {
+  const bgColor = getComputedStyle(document.documentElement)
+    .getPropertyValue("--background")
+    .trim();
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute("content", `hsl(${bgColor})`);
+  }
+}
+
+interface ThemeSelectProps {
+  initialTheme: ThemeKey;
+}
+
+export function ThemeSelect({ initialTheme }: ThemeSelectProps) {
+  const [currentTheme, setCurrentTheme] = useState<ThemeKey>(initialTheme);
 
   useEffect(() => {
-    // 初期値をHTMLのdata-theme属性から取得
-    const theme = document.documentElement.getAttribute(
-      "data-theme",
-    ) as ThemeKey;
-    if (theme && THEMES.includes(theme)) {
-      setCurrentTheme(theme);
-    }
-
-    // theme-colorメタタグを更新
-    const updateThemeColor = () => {
-      const bgColor = getComputedStyle(document.documentElement)
-        .getPropertyValue("--background")
-        .trim();
-      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-      if (metaThemeColor) {
-        metaThemeColor.setAttribute("content", `hsl(${bgColor})`);
-      }
-    };
-    updateThemeColor();
+    // 初回マウント時にtheme-colorメタタグを更新
+    updateThemeColorMeta();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -43,13 +41,7 @@ export function ThemeSelect() {
 
     // theme-colorメタタグを更新
     setTimeout(() => {
-      const bgColor = getComputedStyle(document.documentElement)
-        .getPropertyValue("--background")
-        .trim();
-      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-      if (metaThemeColor) {
-        metaThemeColor.setAttribute("content", `hsl(${bgColor})`);
-      }
+      updateThemeColorMeta();
     }, 0);
 
     // サーバーアクションでCookie永続化
