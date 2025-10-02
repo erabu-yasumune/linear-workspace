@@ -1,8 +1,5 @@
 import { Suspense } from "react";
-import { cookies } from "next/headers";
 import { ThemeSelect } from "@/app/_components/ThemeSelect";
-import { THEMES, type ThemeKey } from "@/app/actions/theme.types";
-import { Icon } from "@/components/Icon";
 import { LinearWorkspace } from "@/components/LinearWorkspace";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import {
@@ -17,12 +14,6 @@ import {
 } from "@/lib/actions";
 
 export default async function Home() {
-  const cookieStore = await cookies();
-  const themeCookie = cookieStore.get("theme")?.value;
-  const theme: ThemeKey =
-    themeCookie && THEMES.includes(themeCookie as ThemeKey)
-      ? (themeCookie as ThemeKey)
-      : "black";
   let issues: LinearIssue[];
   let cycles: LinearCycle[];
   let users: LinearUser[];
@@ -94,7 +85,7 @@ export default async function Home() {
             <h1 className="text-xl font-semibold flex items-center space-x-2">
               <span>Linear Gantt</span>
             </h1>
-            <ThemeSelect initialTheme={theme} />
+            <ThemeSelect />
           </div>
         </div>
       </header>
