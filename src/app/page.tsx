@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { ThemeSelect } from "@/app/_components/ThemeSelect";
 import { Icon } from "@/components/Icon";
 import { LinearWorkspace } from "@/components/LinearWorkspace";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -59,14 +60,14 @@ export default async function Home() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0d1117] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">エラーが発生しました</h2>
-          <p className="text-gray-400 mb-4">{error}</p>
+          <p className="opacity-60 mb-4">{error}</p>
           <form action="">
             <button
               type="submit"
-              className="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-80 transition-opacity"
             >
               再試行
             </button>
@@ -77,14 +78,15 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="border-b border-gray-800 bg-[#0d1117]">
+      <header className="border-b border-border bg-background">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-white flex items-center space-x-2">
+            <h1 className="text-xl font-semibold flex items-center space-x-2">
               <span>Linear Gantt</span>
             </h1>
+            <ThemeSelect />
           </div>
         </div>
       </header>

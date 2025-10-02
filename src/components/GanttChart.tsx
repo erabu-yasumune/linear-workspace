@@ -288,17 +288,17 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
 
   if (timelineItems.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400 bg-gray-900 rounded-lg border border-gray-700">
+      <div className="flex items-center justify-center h-64 opacity-60 bg-card rounded-lg border border-border">
         <p>該当するIssueが見つかりません</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-900 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+    <div className="bg-card rounded-lg shadow-lg border border-border overflow-hidden">
       {/* Date Header */}
-      <div className="flex border-b border-gray-700 bg-gray-800">
-        <div className="w-96 p-3 font-medium text-gray-200 border-r border-gray-700">
+      <div className="flex border-b border-border bg-card">
+        <div className="w-96 p-3 font-medium border-r border-border">
           Issue / Assignee
         </div>
         <div className="flex-1 relative overflow-hidden">
@@ -310,12 +310,12 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
               return (
                 <div
                   key={date.toISOString()}
-                  className={`flex-1 p-2 text-center text-xs border-r border-gray-600 ${
+                  className={`flex-1 p-2 text-center text-xs border-r border-border ${
                     isTodayCheck
-                      ? "bg-green-500/20 text-green-300 font-bold border-green-400/50"
+                      ? "bg-primary/20 font-bold border-primary/50"
                       : isWeekendCheck
-                        ? "bg-gray-700 text-gray-400"
-                        : "text-gray-300"
+                        ? "bg-primary/5 opacity-50"
+                        : ""
                   }`}
                   style={{ minWidth: `${MIN_COLUMN_WIDTH_PX}px` }}
                 >
@@ -328,7 +328,7 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
       </div>
 
       {/* Issues */}
-      <div className="divide-y divide-gray-700">
+      <div className="divide-y divide-border">
         {sortedItems.map((item) => {
           const position = getItemPosition(item);
           const assigneeColor = getAssigneeColor(item.assignee?.id);
@@ -336,9 +336,9 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
           return (
             <div
               key={item.id}
-              className="flex items-stretch hover:bg-gray-800/50 transition-colors min-h-16"
+              className="flex items-stretch hover:bg-primary/5 transition-colors min-h-16"
             >
-              <div className="w-96 p-3 border-r border-gray-700">
+              <div className="w-96 p-3 border-r border-border">
                 <div className="flex items-start space-x-2">
                   {/* Hierarchy indicator with tree lines */}
                   <div
@@ -352,11 +352,11 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
                   >
                     {item.hierarchyLevel !== undefined &&
                     item.hierarchyLevel > 0 ? (
-                      <span className="text-gray-400 text-xs font-mono">
+                      <span className="opacity-60 text-xs font-mono">
                         {HIERARCHY_SYMBOLS.CHILD_PREFIX}
                       </span>
                     ) : null}
-                    <span className="text-xs font-mono px-2 py-1 rounded flex-shrink-0 mt-0.5 text-gray-300 bg-gray-700">
+                    <span className="text-xs font-mono px-2 py-1 rounded flex-shrink-0 mt-0.5 bg-primary/10">
                       {item.identifier}
                     </span>
                   </div>
@@ -365,7 +365,7 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
                       href={`https://linear.app/issue/${item.identifier}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm hover:text-blue-400 hover:underline block leading-tight text-gray-100"
+                      className="text-sm hover:opacity-70 hover:underline block leading-tight"
                       title={item.title}
                     >
                       {item.title}
@@ -379,19 +379,19 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
                     {item.state.name}
                   </span>
                   {item.assignee && (
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs opacity-60">
                       • {item.assignee.displayName}
                     </span>
                   )}
                   {item.estimate && (
-                    <span className="text-xs text-blue-400 font-medium">
+                    <span className="text-xs font-medium opacity-80">
                       • {item.estimate}pt
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="flex-1 relative bg-gray-800 min-h-16 overflow-hidden">
+              <div className="flex-1 relative bg-card min-h-16 overflow-hidden">
                 {/* Date grid background */}
                 <div className="absolute inset-0 flex h-full">
                   {dateGrid.map((date) => {
@@ -401,11 +401,11 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
                     return (
                       <div
                         key={`bg-${date.toISOString()}`}
-                        className={`flex-1 border-r border-gray-600 ${
+                        className={`flex-1 border-r border-border ${
                           isTodayCheck
-                            ? "bg-green-500/10 border-green-400/30"
+                            ? "bg-primary/10 border-primary/30"
                             : isWeekendCheck
-                              ? "bg-gray-700/30"
+                              ? "bg-primary/5"
                               : ""
                         }`}
                         style={{ minWidth: `${MIN_COLUMN_WIDTH_PX}px` }}
@@ -417,7 +417,7 @@ export function GanttChart({ issues, selectedCycle }: GanttChartProps) {
                 {/* Task bar */}
                 {position.width > 0 && (
                   <div
-                    className="absolute top-4 h-8 rounded-md shadow-lg border border-gray-600/50"
+                    className="absolute top-4 h-8 rounded-md shadow-lg border border-border/50"
                     style={{
                       left: `${position.left}%`,
                       width: `${position.width}%`,

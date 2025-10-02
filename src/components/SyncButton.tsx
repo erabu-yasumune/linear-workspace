@@ -42,7 +42,7 @@ export function SyncButton({ onSync, loading, lastSync }: SyncButtonProps) {
   return (
     <div className="flex items-center space-x-4">
       {lastSync && (
-        <span className="text-sm text-gray-400">
+        <span className="text-sm opacity-60">
           最終同期: {formatLastSync(lastSync)}
         </span>
       )}
@@ -53,8 +53,8 @@ export function SyncButton({ onSync, loading, lastSync }: SyncButtonProps) {
         disabled={loading}
         className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
           loading
-            ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-            : "bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800"
+            ? "bg-primary/20 opacity-50 cursor-not-allowed"
+            : "bg-primary text-primary-foreground hover:opacity-80"
         }`}
       >
         {loading ? (
