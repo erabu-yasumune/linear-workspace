@@ -75,7 +75,7 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
 
     // 総ポイント数を計算
     const totalPlanned = issues.reduce(
-      (sum, issue) => sum + (issue.estimate || 1),
+      (sum, issue) => sum + (issue.estimate || 0),
       0,
     );
 
@@ -108,7 +108,7 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
             targetDueDate.isBefore(date) ||
             targetDueDate.isSame(date, "day")
           ) {
-            plannedCompletedPoints += issue.estimate || 1;
+            plannedCompletedPoints += issue.estimate || 0;
           }
         });
       } else {
@@ -117,19 +117,19 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
           if (issue.dueDate) {
             const dueDate = parseDate(issue.dueDate);
             if (dueDate.isBefore(date) || dueDate.isSame(date, "day")) {
-              plannedCompletedPoints += issue.estimate || 1;
+              plannedCompletedPoints += issue.estimate || 0;
             }
           } else {
             // 推定期間での計算
             const createdDate = parseDate(issue.createdAt);
-            const estimatedDays = Math.max(3, (issue.estimate || 1) * 2);
+            const estimatedDays = Math.max(3, (issue.estimate || 0) * 2);
             const estimatedDueDate = createdDate.add(estimatedDays, "day");
 
             if (
               estimatedDueDate.isBefore(date) ||
               estimatedDueDate.isSame(date, "day")
             ) {
-              plannedCompletedPoints += issue.estimate || 1;
+              plannedCompletedPoints += issue.estimate || 0;
             }
           }
         });
@@ -168,7 +168,7 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
             effectiveCompletionDate.isBefore(date) ||
             effectiveCompletionDate.isSame(date, "day")
           ) {
-            completedPoints += issue.estimate || 1;
+            completedPoints += issue.estimate || 0;
           }
         }
       });
