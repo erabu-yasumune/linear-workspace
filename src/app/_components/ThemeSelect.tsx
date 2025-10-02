@@ -9,8 +9,12 @@ const THEME_LABELS: Record<ThemeKey, string> = {
   white: "ホワイト",
 };
 
-export function ThemeSelect() {
-  const [currentTheme, setCurrentTheme] = useState<ThemeKey>("black");
+interface ThemeSelectProps {
+  initialTheme: ThemeKey;
+}
+
+export function ThemeSelect({ initialTheme }: ThemeSelectProps) {
+  const [currentTheme, setCurrentTheme] = useState<ThemeKey>(initialTheme);
 
   useEffect(() => {
     // 初期値をHTMLのdata-theme属性から取得
