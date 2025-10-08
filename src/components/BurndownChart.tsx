@@ -75,7 +75,7 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
 
     // 総ポイント数を計算
     const totalPlanned = issues.reduce(
-      (sum, issue) => sum + (issue.estimate || 1),
+      (sum, issue) => sum + (issue.estimate || 0),
       0,
     );
 
@@ -108,7 +108,7 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
             targetDueDate.isBefore(date) ||
             targetDueDate.isSame(date, "day")
           ) {
-            plannedCompletedPoints += issue.estimate || 1;
+            plannedCompletedPoints += issue.estimate || 0;
           }
         });
       } else {
@@ -117,19 +117,19 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
           if (issue.dueDate) {
             const dueDate = parseDate(issue.dueDate);
             if (dueDate.isBefore(date) || dueDate.isSame(date, "day")) {
-              plannedCompletedPoints += issue.estimate || 1;
+              plannedCompletedPoints += issue.estimate || 0;
             }
           } else {
             // 推定期間での計算
             const createdDate = parseDate(issue.createdAt);
-            const estimatedDays = Math.max(3, (issue.estimate || 1) * 2);
+            const estimatedDays = Math.max(3, (issue.estimate || 0) * 2);
             const estimatedDueDate = createdDate.add(estimatedDays, "day");
 
             if (
               estimatedDueDate.isBefore(date) ||
               estimatedDueDate.isSame(date, "day")
             ) {
-              plannedCompletedPoints += issue.estimate || 1;
+              plannedCompletedPoints += issue.estimate || 0;
             }
           }
         });
@@ -168,7 +168,7 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
             effectiveCompletionDate.isBefore(date) ||
             effectiveCompletionDate.isSame(date, "day")
           ) {
-            completedPoints += issue.estimate || 1;
+            completedPoints += issue.estimate || 0;
           }
         }
       });
@@ -239,20 +239,18 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
 
   if (issues.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400 bg-gray-900 rounded-lg border border-gray-700">
+      <div className="flex items-center justify-center h-64 opacity-60 bg-card rounded-lg border border-border">
         <p>該当するIssueが見つかりません</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-900 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+    <div className="bg-card rounded-lg shadow-lg border border-border overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-gray-700 bg-gray-800">
-        <h3 className="text-lg font-medium text-gray-200">
-          バーンダウンチャート
-        </h3>
-        <p className="text-sm text-gray-400">
+      <div className="p-4 border-b border-border bg-card">
+        <h3 className="text-lg font-medium">バーンダウンチャート</h3>
+        <p className="text-sm opacity-60">
           総ポイント: {dataPoints[0]?.totalPlanned || 0} • 残りポイント:{" "}
           {dataPoints[dataPoints.length - 1]?.actualRemaining?.toFixed(1) || 0}{" "}
           • {selectedCycle ? "サイクル完了目標" : "Due Dateベース"}
@@ -281,8 +279,9 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
               <path
                 d="M 10 0 L 0 0 0 10"
                 fill="none"
-                stroke="#374151"
+                stroke="currentColor"
                 strokeWidth="0.5"
+                opacity="0.2"
               />
             </pattern>
           </defs>
@@ -305,14 +304,16 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
                   y1={y}
                   x2={padding.left + graphWidth}
                   y2={y}
-                  stroke="#4B5563"
+                  stroke="currentColor"
                   strokeWidth="0.5"
+                  opacity="0.2"
                 />
                 <text
                   x={padding.left - 10}
                   y={y + 4}
                   textAnchor="end"
-                  className="text-xs fill-gray-400"
+                  className="text-xs opacity-60"
+                  fill="currentColor"
                 >
                   {value.toFixed(0)}
                 </text>
@@ -331,14 +332,16 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
                     y1={padding.top}
                     x2={x}
                     y2={padding.top + graphHeight}
-                    stroke="#4B5563"
+                    stroke="currentColor"
                     strokeWidth="0.5"
+                    opacity="0.2"
                   />
                   <text
                     x={x}
                     y={padding.top + graphHeight + 20}
                     textAnchor="middle"
-                    className="text-xs fill-gray-400"
+                    className="text-xs opacity-60"
+                    fill="currentColor"
                   >
                     {formatDateShort(parseDate(d.date))}
                   </text>
@@ -371,12 +374,14 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
                 stroke="#10B981"
                 strokeWidth="2"
                 strokeDasharray="3,3"
+                opacity="0.8"
               />
               <text
                 x={scaleX(todayIndex)}
                 y={padding.top - 5}
                 textAnchor="middle"
-                className="text-xs fill-green-400 font-medium"
+                className="text-xs font-medium"
+                fill="#10B981"
               >
                 Today
               </text>
@@ -394,8 +399,9 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
                     cy={scaleY(d.plannedRemaining)}
                     r="4"
                     fill="#3B82F6"
-                    stroke="#1F2937"
+                    stroke="currentColor"
                     strokeWidth="2"
+                    opacity="0.9"
                   />
                   {/* 実際線のポイント */}
                   <circle
@@ -403,8 +409,9 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
                     cy={scaleY(d.actualRemaining)}
                     r="4"
                     fill="#EF4444"
-                    stroke="#1F2937"
+                    stroke="currentColor"
                     strokeWidth="2"
+                    opacity="0.9"
                   />
                 </g>
               );
@@ -417,7 +424,8 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
             x={chartWidth / 2}
             y={chartHeight - 10}
             textAnchor="middle"
-            className="text-sm fill-gray-300"
+            className="text-sm opacity-60"
+            fill="currentColor"
           >
             日付
           </text>
@@ -426,7 +434,8 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
             y={chartHeight / 2}
             textAnchor="middle"
             transform={`rotate(-90, 20, ${chartHeight / 2})`}
-            className="text-sm fill-gray-300"
+            className="text-sm opacity-60"
+            fill="currentColor"
           >
             残りポイント
           </text>
@@ -436,13 +445,13 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
         <div className="flex justify-center space-x-6 mt-4">
           <div className="flex items-center space-x-2">
             <div className="w-4 h-0 border-t-2 border-dashed border-blue-400"></div>
-            <span className="text-sm text-gray-400">
+            <span className="text-sm opacity-60">
               計画線 ({selectedCycle ? "サイクル完了目標" : "Due Dateベース"})
             </span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-4 h-0 border-t-2 border-red-400"></div>
-            <span className="text-sm text-gray-400">実績線 (完了ベース)</span>
+            <span className="text-sm opacity-60">実績線 (完了ベース)</span>
           </div>
         </div>
       </div>

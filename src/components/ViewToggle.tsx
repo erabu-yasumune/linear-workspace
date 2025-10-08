@@ -60,15 +60,15 @@ export function FilterControls({
     <div className="flex items-center space-x-6">
       {/* Cycle Filter */}
       <div className="flex items-center space-x-3">
-        <span className="text-sm font-medium text-gray-300 flex items-center space-x-1">
-          <Icon name="bar_chart" className="text-gray-300" />
+        <span className="text-sm font-medium flex items-center space-x-1">
+          <Icon name="bar_chart" />
           <span>Cycle:</span>
         </span>
         <select
           value={selectedCycle || ""}
           onChange={(e) => onCycleChange(e.target.value || null)}
           disabled={isLoading}
-          className="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-card border border-border text-foreground text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <option value="">すべてのCycle</option>
           {cycles.map((cycle) => (
@@ -78,8 +78,8 @@ export function FilterControls({
           ))}
         </select>
         {selectedCycleData && (
-          <span className="text-sm text-gray-400 flex items-center space-x-1">
-            <Icon name="calendar_month" className="text-gray-400" size="sm" />
+          <span className="text-sm opacity-60 flex items-center space-x-1">
+            <Icon name="calendar_month" size="sm" />
             <span>{formatCyclePeriod(selectedCycleData)}</span>
           </span>
         )}
@@ -87,15 +87,15 @@ export function FilterControls({
 
       {/* Assignee Filter */}
       <div className="flex items-center space-x-3">
-        <span className="text-sm font-medium text-gray-300 flex items-center space-x-1">
-          <Icon name="person" className="text-gray-300" />
+        <span className="text-sm font-medium flex items-center space-x-1">
+          <Icon name="person" />
           <span>Assignee:</span>
         </span>
         <select
           value={selectedAssignee || ""}
           onChange={(e) => onAssigneeChange(e.target.value || null)}
           disabled={isLoading}
-          className="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-card border border-border text-foreground text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <option value="">すべてのAssignee</option>
           <option value="unassigned">未アサイン</option>

@@ -167,18 +167,15 @@ export function BulkIssueForm({
       )}
 
       {/* Team Selector */}
-      <div className="bg-[#1c1c1e] rounded-lg border border-gray-800 p-4">
-        <label
-          htmlFor="team-select"
-          className="block text-sm font-medium text-gray-300 mb-2"
-        >
+      <div className="bg-card rounded-lg border border-border p-4">
+        <label htmlFor="team-select" className="block text-sm font-medium mb-2">
           Team *
         </label>
         <select
           id="team-select"
           value={selectedTeamId}
           onChange={(e) => setSelectedTeamId(e.target.value)}
-          className="w-full max-w-md bg-[#2c2c2e] text-white text-sm px-3 py-2 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
+          className="w-full max-w-md bg-card text-foreground text-sm px-3 py-2 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           required
         >
           <option value="">Select a team</option>
@@ -190,48 +187,45 @@ export function BulkIssueForm({
         </select>
       </div>
 
-      <div className="overflow-x-auto bg-[#1c1c1e] rounded-lg border border-gray-800">
+      <div className="overflow-x-auto bg-card rounded-lg border border-border">
         <table className="w-full text-xs">
-          <thead className="bg-[#2c2c2e] border-b border-gray-800">
+          <thead className="bg-primary/5 border-b border-border">
             <tr>
-              <th className="px-3 py-2 text-left font-medium text-gray-300 min-w-[180px]">
+              <th className="px-3 py-2 text-left font-medium min-w-[180px]">
                 Title *
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-300 min-w-[350px]">
+              <th className="px-3 py-2 text-left font-medium min-w-[350px]">
                 Description
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-300 min-w-[140px]">
+              <th className="px-3 py-2 text-left font-medium min-w-[140px]">
                 Cycle
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-300 min-w-[100px]">
+              <th className="px-3 py-2 text-left font-medium min-w-[100px]">
                 Estimate
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-300 min-w-[130px]">
+              <th className="px-3 py-2 text-left font-medium min-w-[130px]">
                 Due Date
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-300 min-w-[140px]">
+              <th className="px-3 py-2 text-left font-medium min-w-[140px]">
                 Assignee
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-300 min-w-[140px]">
+              <th className="px-3 py-2 text-left font-medium min-w-[140px]">
                 Parent Issue
               </th>
-              <th className="px-3 py-2 text-center font-medium text-gray-300 w-[50px]">
+              <th className="px-3 py-2 text-center font-medium w-[50px]">
                 削除
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-border">
             {rows.map((row) => (
-              <tr
-                key={row.id}
-                className="hover:bg-[#2c2c2e]/50 transition-colors"
-              >
+              <tr key={row.id} className="hover:bg-primary/5 transition-colors">
                 <td className="px-3 py-2 align-top">
                   <input
                     type="text"
                     value={row.title}
                     onChange={(e) => updateRow(row.id, "title", e.target.value)}
-                    className="w-full bg-[#2c2c2e] text-white text-xs px-2 py-1.5 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     placeholder="Issue title"
                   />
                 </td>
@@ -241,7 +235,7 @@ export function BulkIssueForm({
                     onChange={(e) =>
                       updateRow(row.id, "description", e.target.value)
                     }
-                    className="w-full bg-[#2c2c2e] text-white text-xs px-2 py-1.5 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none resize-y min-h-[60px]"
+                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y min-h-[60px]"
                     placeholder="Optional description"
                   />
                 </td>
@@ -251,7 +245,7 @@ export function BulkIssueForm({
                     onChange={(e) =>
                       updateRow(row.id, "cycleId", e.target.value)
                     }
-                    className="w-full bg-[#2c2c2e] text-white text-xs px-2 py-1.5 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     <option value="">No Cycle</option>
                     {cycles.map((cycle) => (
@@ -267,7 +261,7 @@ export function BulkIssueForm({
                     onChange={(e) =>
                       updateRow(row.id, "estimate", e.target.value)
                     }
-                    className="w-full bg-[#2c2c2e] text-white text-xs px-2 py-1.5 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     <option value="">No Estimate</option>
                     {ESTIMATE_OPTIONS.map((value) => (
@@ -282,7 +276,7 @@ export function BulkIssueForm({
                     selected={row.dueDate}
                     onChange={(date) => updateRow(row.id, "dueDate", date)}
                     dateFormat="yyyy-MM-dd"
-                    className="w-full bg-[#2c2c2e] text-white text-xs px-2 py-1.5 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     placeholderText="Select date"
                     isClearable
                   />
@@ -293,7 +287,7 @@ export function BulkIssueForm({
                     onChange={(e) =>
                       updateRow(row.id, "assigneeId", e.target.value)
                     }
-                    className="w-full bg-[#2c2c2e] text-white text-xs px-2 py-1.5 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     <option value="">No Assignee</option>
                     {users.map((user) => (
@@ -309,7 +303,7 @@ export function BulkIssueForm({
                     onChange={(e) =>
                       updateRow(row.id, "parentId", e.target.value)
                     }
-                    className="w-full bg-[#2c2c2e] text-white text-xs px-2 py-1.5 rounded border border-gray-700 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     <option value="">No Parent</option>
                     {issues.map((issue) => (
@@ -347,7 +341,7 @@ export function BulkIssueForm({
         <button
           type="submit"
           disabled={isPending}
-          className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+          className="px-6 py-2 bg-primary text-primary-foreground hover:opacity-80 rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
         >
           {isPending ? (
             <>
