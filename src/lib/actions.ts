@@ -22,6 +22,44 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([promise, timeoutPromise]);
 }
 
+// Retry with exponential backoff for rate limit errors
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3,
+  initialDelay = 1000,
+): Promise<T> {
+  let lastError: Error | unknown;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+
+      // Check if it's a rate limit error
+      const isRateLimitError =
+        error instanceof Error &&
+        (error.message.includes("ratelimit") ||
+          error.message.includes("rate limit") ||
+          error.message.includes("429"));
+
+      // Don't retry if not a rate limit error or if it's the last attempt
+      if (!isRateLimitError || attempt === maxRetries) {
+        throw error;
+      }
+
+      // Calculate delay with exponential backoff
+      const delay = initialDelay * Math.pow(2, attempt);
+      console.log(`Rate limit hit. Retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
+
+      // Wait before retrying
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError;
+}
+
 export interface LinearIssue {
   id: string;
   title: string;
@@ -78,12 +116,14 @@ export interface LinearTeam {
 
 export async function getLinearIssues(): Promise<LinearIssue[]> {
   try {
-    const issues = await withTimeout(
-      linearClient.issues({
-        includeArchived: false,
-        first: 100,
-      }),
-      10000, // 10 second timeout
+    const issues = await withRetry(() =>
+      withTimeout(
+        linearClient.issues({
+          includeArchived: false,
+          first: 100,
+        }),
+        10000, // 10 second timeout
+      ),
     );
 
     const validIssues: LinearIssue[] = [];
@@ -149,6 +189,16 @@ export async function getLinearIssues(): Promise<LinearIssue[]> {
   } catch (error) {
     console.error("Failed to fetch issues from Linear:", error);
     if (error instanceof Error) {
+      // Provide user-friendly error message for rate limiting
+      if (
+        error.message.includes("ratelimit") ||
+        error.message.includes("rate limit") ||
+        error.message.includes("429")
+      ) {
+        throw new Error(
+          "Linear APIのレート制限に達しました。しばらく時間をおいてから再度お試しください。",
+        );
+      }
       throw new Error(`Linear API Error: ${error.message}`);
     }
     throw new Error("Failed to fetch issues from Linear API");
@@ -157,11 +207,13 @@ export async function getLinearIssues(): Promise<LinearIssue[]> {
 
 export async function getLinearCycles(): Promise<LinearCycle[]> {
   try {
-    const cycles = await withTimeout(
-      linearClient.cycles({
-        first: 50,
-      }),
-      10000, // 10 second timeout
+    const cycles = await withRetry(() =>
+      withTimeout(
+        linearClient.cycles({
+          first: 50,
+        }),
+        10000, // 10 second timeout
+      ),
     );
 
     return cycles.nodes.map((cycle) => ({
@@ -186,11 +238,13 @@ export async function getLinearCycles(): Promise<LinearCycle[]> {
 
 export async function getLinearUsers(): Promise<LinearUser[]> {
   try {
-    const users = await withTimeout(
-      linearClient.users({
-        first: 100,
-      }),
-      10000, // 10 second timeout
+    const users = await withRetry(() =>
+      withTimeout(
+        linearClient.users({
+          first: 100,
+        }),
+        10000, // 10 second timeout
+      ),
     );
 
     return users.nodes.map((user) => ({
@@ -210,11 +264,13 @@ export async function getLinearUsers(): Promise<LinearUser[]> {
 
 export async function getLinearTeams(): Promise<LinearTeam[]> {
   try {
-    const teams = await withTimeout(
-      linearClient.teams({
-        first: 50,
-      }),
-      10000, // 10 second timeout
+    const teams = await withRetry(() =>
+      withTimeout(
+        linearClient.teams({
+          first: 50,
+        }),
+        10000, // 10 second timeout
+      ),
     );
 
     return teams.nodes.map((team) => ({
@@ -249,7 +305,9 @@ export async function createBulkIssues(
   // This ensures type safety and prevents invalid data from being sent
   try {
     // Validate that the team exists
-    const teams = await withTimeout(linearClient.teams(), 10000);
+    const teams = await withRetry(() =>
+      withTimeout(linearClient.teams(), 10000),
+    );
     const team = teams.nodes.find((t) => t.id === teamId);
 
     if (!team) {
@@ -258,7 +316,8 @@ export async function createBulkIssues(
 
     // Create issues sequentially to avoid rate limiting
     const results = [];
-    for (const issue of issues) {
+    for (let i = 0; i < issues.length; i++) {
+      const issue = issues[i];
       try {
         const issuePayload: {
           title: string;
@@ -293,12 +352,16 @@ export async function createBulkIssues(
           issuePayload.assigneeId = issue.assigneeId;
         }
 
-        const result = await withTimeout(
-          linearClient.createIssue(issuePayload),
-          10000,
+        const result = await withRetry(() =>
+          withTimeout(linearClient.createIssue(issuePayload), 10000),
         );
 
         results.push(result);
+
+        // Add a small delay between requests to avoid rate limiting
+        if (i < issues.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
       } catch (issueError) {
         console.error("Failed to create individual issue:", issueError);
         throw issueError;
@@ -309,6 +372,16 @@ export async function createBulkIssues(
   } catch (error) {
     console.error("Failed to create bulk issues:", error);
     if (error instanceof Error) {
+      // Provide user-friendly error message for rate limiting
+      if (
+        error.message.includes("ratelimit") ||
+        error.message.includes("rate limit") ||
+        error.message.includes("429")
+      ) {
+        throw new Error(
+          "Linear APIのレート制限に達しました。しばらく時間をおいてから再度お試しください。",
+        );
+      }
       throw new Error(`Issue creation failed: ${error.message}`);
     }
     throw new Error("Failed to create issues in Linear");

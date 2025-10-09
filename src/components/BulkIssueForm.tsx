@@ -4,6 +4,23 @@ import { useState, useTransition } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { z } from "zod";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { ESTIMATE_OPTIONS } from "@/constants/linear";
 import {
   createBulkIssues,
@@ -33,6 +50,198 @@ interface BulkIssueFormProps {
   onSuccess?: () => void;
 }
 
+interface SortableRowProps {
+  row: BulkIssueRow;
+  cycles: LinearCycle[];
+  users: LinearUser[];
+  issues: Array<{ id: string; title: string; identifier: string }>;
+  rows: BulkIssueRow[];
+  updateRow: (
+    id: string,
+    field: keyof BulkIssueRow,
+    value: string | Date | null,
+  ) => void;
+  copyToNextRow: (currentId: string, field: keyof BulkIssueRow) => void;
+  removeRow: (id: string) => void;
+}
+
+function SortableRow({
+  row,
+  cycles,
+  users,
+  issues,
+  rows,
+  updateRow,
+  copyToNextRow,
+  removeRow,
+}: SortableRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: row.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      className="hover:bg-primary/5 transition-colors"
+    >
+      <td className="px-3 py-2 text-center align-top">
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing text-foreground/50 hover:text-foreground text-lg"
+          title="ドラッグして並び替え"
+        >
+          ⋮⋮
+        </button>
+      </td>
+      <td className="px-3 py-2 align-top">
+        <textarea
+          value={row.title}
+          onChange={(e) => updateRow(row.id, "title", e.target.value)}
+          className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y min-h-[60px]"
+          placeholder="Issue title"
+        />
+      </td>
+      <td className="px-3 py-2 align-top">
+        <textarea
+          value={row.description}
+          onChange={(e) => updateRow(row.id, "description", e.target.value)}
+          className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y min-h-[60px]"
+          placeholder="Optional description"
+        />
+      </td>
+      <td className="px-3 py-2 align-top">
+        <div className="flex items-center gap-1">
+          <select
+            value={row.cycleId}
+            onChange={(e) => updateRow(row.id, "cycleId", e.target.value)}
+            className="flex-1 bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">No Cycle</option>
+            {cycles.map((cycle) => (
+              <option key={cycle.id} value={cycle.id}>
+                {cycle.name}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => copyToNextRow(row.id, "cycleId")}
+            disabled={
+              rows.findIndex((r) => r.id === row.id) === rows.length - 1
+            }
+            className="text-red-500 hover:text-red-400 disabled:opacity-30 disabled:cursor-not-allowed text-base px-1 transition-colors"
+            title="この値を次の行にコピー"
+          >
+            ↓
+          </button>
+        </div>
+      </td>
+      <td className="px-3 py-2 align-top">
+        <select
+          value={row.estimate}
+          onChange={(e) => updateRow(row.id, "estimate", e.target.value)}
+          className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        >
+          <option value="">No Estimate</option>
+          {ESTIMATE_OPTIONS.map((value) => (
+            <option key={value} value={value}>
+              {value}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td className="px-3 py-2 align-top">
+        <DatePicker
+          selected={row.dueDate}
+          onChange={(date) => updateRow(row.id, "dueDate", date)}
+          dateFormat="yyyy-MM-dd"
+          className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          placeholderText="Select date"
+          isClearable
+        />
+      </td>
+      <td className="px-3 py-2 align-top">
+        <div className="flex items-center gap-1">
+          <select
+            value={row.assigneeId}
+            onChange={(e) => updateRow(row.id, "assigneeId", e.target.value)}
+            className="flex-1 bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">No Assignee</option>
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.displayName}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => copyToNextRow(row.id, "assigneeId")}
+            disabled={
+              rows.findIndex((r) => r.id === row.id) === rows.length - 1
+            }
+            className="text-red-500 hover:text-red-400 disabled:opacity-30 disabled:cursor-not-allowed text-base px-1 transition-colors"
+            title="この値を次の行にコピー"
+          >
+            ↓
+          </button>
+        </div>
+      </td>
+      <td className="px-3 py-2 align-top w-[200px]">
+        <div className="flex items-center gap-1">
+          <select
+            value={row.parentId}
+            onChange={(e) => updateRow(row.id, "parentId", e.target.value)}
+            className="flex-1 bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">No Parent</option>
+            {issues.map((issue) => (
+              <option key={issue.id} value={issue.id}>
+                {issue.identifier} - {issue.title}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => copyToNextRow(row.id, "parentId")}
+            disabled={
+              rows.findIndex((r) => r.id === row.id) === rows.length - 1
+            }
+            className="text-red-500 hover:text-red-400 disabled:opacity-30 disabled:cursor-not-allowed text-base px-1 transition-colors"
+            title="この値を次の行にコピー"
+          >
+            ↓
+          </button>
+        </div>
+      </td>
+      <td className="px-3 py-2 text-center align-top">
+        <button
+          type="button"
+          onClick={() => removeRow(row.id)}
+          disabled={rows.length === 1}
+          className="text-red-400 hover:text-red-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm"
+        >
+          ✕
+        </button>
+      </td>
+    </tr>
+  );
+}
+
 export function BulkIssueForm({
   cycles,
   users,
@@ -57,6 +266,26 @@ export function BulkIssueForm({
     },
   ]);
   const [error, setError] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setRows((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
 
   const addRow = () => {
     setRows([
@@ -88,6 +317,18 @@ export function BulkIssueForm({
     setRows(
       rows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
     );
+  };
+
+  const copyToNextRow = (
+    currentId: string,
+    field: keyof BulkIssueRow,
+  ) => {
+    const currentIndex = rows.findIndex((row) => row.id === currentId);
+    if (currentIndex === -1 || currentIndex === rows.length - 1) return;
+
+    const currentValue = rows[currentIndex][field];
+    const nextRowId = rows[currentIndex + 1].id;
+    updateRow(nextRowId, field, currentValue);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -187,147 +428,67 @@ export function BulkIssueForm({
         </select>
       </div>
 
-      <div className="overflow-x-auto bg-card rounded-lg border border-border">
-        <table className="w-full text-xs">
-          <thead className="bg-primary/5 border-b border-border">
-            <tr>
-              <th className="px-3 py-2 text-left font-medium min-w-[180px]">
-                Title *
-              </th>
-              <th className="px-3 py-2 text-left font-medium min-w-[350px]">
-                Description
-              </th>
-              <th className="px-3 py-2 text-left font-medium min-w-[140px]">
-                Cycle
-              </th>
-              <th className="px-3 py-2 text-left font-medium min-w-[100px]">
-                Estimate
-              </th>
-              <th className="px-3 py-2 text-left font-medium min-w-[130px]">
-                Due Date
-              </th>
-              <th className="px-3 py-2 text-left font-medium min-w-[140px]">
-                Assignee
-              </th>
-              <th className="px-3 py-2 text-left font-medium min-w-[140px]">
-                Parent Issue
-              </th>
-              <th className="px-3 py-2 text-center font-medium w-[50px]">
-                削除
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {rows.map((row) => (
-              <tr key={row.id} className="hover:bg-primary/5 transition-colors">
-                <td className="px-3 py-2 align-top">
-                  <input
-                    type="text"
-                    value={row.title}
-                    onChange={(e) => updateRow(row.id, "title", e.target.value)}
-                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    placeholder="Issue title"
-                  />
-                </td>
-                <td className="px-3 py-2 align-top">
-                  <textarea
-                    value={row.description}
-                    onChange={(e) =>
-                      updateRow(row.id, "description", e.target.value)
-                    }
-                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y min-h-[60px]"
-                    placeholder="Optional description"
-                  />
-                </td>
-                <td className="px-3 py-2 align-top">
-                  <select
-                    value={row.cycleId}
-                    onChange={(e) =>
-                      updateRow(row.id, "cycleId", e.target.value)
-                    }
-                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    <option value="">No Cycle</option>
-                    {cycles.map((cycle) => (
-                      <option key={cycle.id} value={cycle.id}>
-                        {cycle.name}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-3 py-2 align-top">
-                  <select
-                    value={row.estimate}
-                    onChange={(e) =>
-                      updateRow(row.id, "estimate", e.target.value)
-                    }
-                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    <option value="">No Estimate</option>
-                    {ESTIMATE_OPTIONS.map((value) => (
-                      <option key={value} value={value}>
-                        {value}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-3 py-2 align-top">
-                  <DatePicker
-                    selected={row.dueDate}
-                    onChange={(date) => updateRow(row.id, "dueDate", date)}
-                    dateFormat="yyyy-MM-dd"
-                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    placeholderText="Select date"
-                    isClearable
-                  />
-                </td>
-                <td className="px-3 py-2 align-top">
-                  <select
-                    value={row.assigneeId}
-                    onChange={(e) =>
-                      updateRow(row.id, "assigneeId", e.target.value)
-                    }
-                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    <option value="">No Assignee</option>
-                    {users.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.displayName}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-3 py-2 align-top">
-                  <select
-                    value={row.parentId}
-                    onChange={(e) =>
-                      updateRow(row.id, "parentId", e.target.value)
-                    }
-                    className="w-full bg-card text-foreground text-xs px-2 py-1.5 rounded border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    <option value="">No Parent</option>
-                    {issues.map((issue) => (
-                      <option key={issue.id} value={issue.id}>
-                        {issue.identifier} - {issue.title}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-3 py-2 text-center align-top">
-                  <button
-                    type="button"
-                    onClick={() => removeRow(row.id)}
-                    disabled={rows.length === 1}
-                    className="text-red-400 hover:text-red-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm"
-                  >
-                    ✕
-                  </button>
-                </td>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="overflow-x-auto bg-card rounded-lg border border-border">
+          <table className="w-full text-xs">
+            <thead className="bg-primary/5 border-b border-border">
+              <tr>
+                <th className="px-3 py-2 text-center font-medium w-[40px]">
+
+                </th>
+                <th className="px-3 py-2 text-left font-medium min-w-[180px]">
+                  Title *
+                </th>
+                <th className="px-3 py-2 text-left font-medium min-w-[350px]">
+                  Description
+                </th>
+                <th className="px-3 py-2 text-left font-medium min-w-[140px]">
+                  Cycle
+                </th>
+                <th className="px-3 py-2 text-left font-medium min-w-[100px]">
+                  Estimate
+                </th>
+                <th className="px-3 py-2 text-left font-medium min-w-[130px]">
+                  Due Date
+                </th>
+                <th className="px-3 py-2 text-left font-medium min-w-[140px]">
+                  Assignee
+                </th>
+                <th className="px-3 py-2 text-left font-medium w-[200px]">
+                  Parent Issue
+                </th>
+                <th className="px-3 py-2 text-center font-medium w-[50px]">
+                  削除
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <SortableContext
+              items={rows.map((row) => row.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <tbody className="divide-y divide-border">
+                {rows.map((row) => (
+                  <SortableRow
+                    key={row.id}
+                    row={row}
+                    cycles={cycles}
+                    users={users}
+                    issues={issues}
+                    rows={rows}
+                    updateRow={updateRow}
+                    copyToNextRow={copyToNextRow}
+                    removeRow={removeRow}
+                  />
+                ))}
+              </tbody>
+            </SortableContext>
+          </table>
+        </div>
+      </DndContext>
 
       <div className="flex items-center justify-between">
         <button
