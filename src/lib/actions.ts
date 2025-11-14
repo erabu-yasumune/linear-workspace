@@ -88,6 +88,7 @@ export interface LinearIssue {
   };
   createdAt: string;
   updatedAt: string;
+  completedAt?: string;
   dueDate?: string;
   startedAt?: string;
   estimate?: number;
@@ -178,6 +179,9 @@ export async function getLinearIssues(): Promise<LinearIssue[]> {
             : undefined,
           createdAt: toISOString(issue.createdAt),
           updatedAt: toISOString(issue.updatedAt),
+          completedAt: issue.completedAt
+            ? toISOString(issue.completedAt)
+            : undefined,
           dueDate: issue.dueDate ? toISOString(issue.dueDate) : undefined,
           startedAt: issue.startedAt ? toISOString(issue.startedAt) : undefined,
           estimate: issue.estimate || undefined,
