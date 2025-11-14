@@ -145,8 +145,8 @@ export function BurndownChart({ issues, selectedCycle }: BurndownChartProps) {
       issues.forEach((issue) => {
         const progress = getProgressFromState(issue.state.type);
         if (progress === 100) {
-          // 完了したタスクは、updatedAtが現在日以前なら完了とみなす
-          const completionDate = issue.updatedAt;
+          // 完了したタスクは、completedAtまたはupdatedAtが現在日以前なら完了とみなす
+          const completionDate = issue.completedAt || issue.updatedAt;
           let effectiveCompletionDate = parseDate(completionDate);
 
           // サイクル指定時、完了日がサイクル期間外の場合は適切に調整
